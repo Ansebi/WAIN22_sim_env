@@ -17,7 +17,7 @@ def encode_movie(tags):
 def encode_user(history):
     '''provide user encoding based on their normalized movie ratings'''
     movieIds = history.movieId.to_list()
-    ratings = history.rating.to_numpy() / 5
+    ratings = (history.rating.to_numpy() - 2.75) / 2.25
     enc = np.sum(ratings * movies[movies.movieId.isin(history.movieId)].encoding.values)
     return enc
 
@@ -45,9 +45,8 @@ if __name__ == '__main__':
     movies = movies[movies.genres != '(no genres listed)']
     movies = movies[movies.genres != ''].reset_index(drop=True)
 
-    # encode and save processed movies data
+    # encode processed movies data
     movies['encoding'] = movies.genres.apply(encode_movie)
-    movies.to_csv('./MovieLens25M/movies_processed.csv', index=False)
 
     # read ratings data and drop removed movies
     try:
@@ -58,10 +57,9 @@ if __name__ == '__main__':
         raise SystemExit
     ratings = ratings[ratings.movieId.isin(movies.movieId) == True]
 
-    # encode users based on their ratings and save processed user data
+    # encode users based on their ratings
     users = ratings.groupby('userId').apply(encode_user).reset_index()
     users.columns = ['userId', 'encoding']
-    users.to_csv('./MovieLens25M/users_processed.csv', index=False)
 
     # get NUM_ACTIONS most popular movies
     popular_ids = ratings.movieId.value_counts().index[:NUM_ACTIONS].to_list()

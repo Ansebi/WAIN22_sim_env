@@ -21,7 +21,7 @@ class ML25MEnv(gym.Env):
         # setup state space
         self.state_data = pd.read_csv('./data/MovieLens25M/users_active.csv', converters={'encoding': str_to_np})
         self.states = np.array(self.state_data.encoding.to_list())
-        self.observation_space = gym.spaces.Box(low=0., high=100.,
+        self.observation_space = gym.spaces.Box(low=-100., high=100.,
                                                 shape=(self.states.shape[1],), dtype=np.float32)
 
         # setup action space
@@ -31,7 +31,7 @@ class ML25MEnv(gym.Env):
 
         # setup reward signal
         cossim = lambda s,a: np.dot(s, a.T) / (np.linalg.norm(s) * np.linalg.norm(a))
-        self.reward = lambda s,a: min(5., np.round(13 * cossim(s,a)**.8) / 2)
+        self.reward = lambda s,a: np.clip(np.ceil(2 + 10 * cossim(s,a)) / 2, 0.5, 5.0)
 
     def fix_random_seed(self):
         '''fix random seed for reproducibility'''
@@ -52,6 +52,26 @@ class ML25MEnv(gym.Env):
         done = True
         info = {}
         return s, r, done, info
+
+
+    def test_params(self):
+        import matplotlib.pyplot as plt
+        cossim = lambda s,a: np.dot(s, a.T) / (np.linalg.norm(s) * np.linalg.norm(a))
+
+        for p1 in np.linspace(2.5,3.5,11):
+            for p2 in np.linspace(8,9,11):
+                self.reward = lambda s,a: np.clip(np.round(p1 + p2 * cossim(s,a)) / 2, 0.5, 5.0)
+
+                fig, ax = plt.subplots(figsize=(8,5))
+                rr = []
+                for s in env.states:
+                    for a in env.actions:
+                        rr.append(env.reward(s,a))
+                plt.hist(rr, bins=np.linspace(0.5,5.5,6), density=True)
+                plt.xlim(0.5, 5.5)
+                plt.savefig(f'./params/{int(10*p1)}_{int(10*p2)}.png', dpi=300, format='png')
+                plt.close()
+
 
 
 if __name__ == '__main__':

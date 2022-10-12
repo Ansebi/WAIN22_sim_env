@@ -7,7 +7,7 @@ import stable_baselines3 as sb3
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-sns.set_theme(style='darkgrid', palette='muted', font='monospace')
+sns.set_theme(style='darkgrid', palette='muted', font='monospace', font_scale=1.2)
 
 
 class RLAgents:
@@ -51,10 +51,12 @@ class RLAgents:
 
     def plot_rewards(self):
         '''plot training rewards'''
-        fig, ax = plt.subplots(figsize=(8,5))
+        fig, ax = plt.subplots(figsize=(8,4))
         for agent_name, agent_rewards in self.rewards.items():
             rewards_smooth = pd.Series(agent_rewards).rolling(1000).mean().to_list()
             plt.plot(rewards_smooth, linewidth=3, label=agent_name)
+        plt.xlabel('number of agent-environment interactions')
+        plt.ylabel('average user rating')
         plt.legend(loc='lower right')
         plt.tight_layout()
         plt.savefig(f'./images/{self.env.name}_rewards.png', format='png', dpi=300)
