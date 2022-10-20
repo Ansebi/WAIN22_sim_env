@@ -10,7 +10,7 @@ def parse_arguments():
     '''parse input arguments'''
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--seed', default=2022, help='value of random seed, default is 2022')
-    parser.add_argument('-e', '--environment', default='ml25m', help='which environment to use: ml25m, imbd')
+    parser.add_argument('-e', '--environment', default='ml25m', help='which environment to use: ml25m, imdb')
     args = parser.parse_args()
     return int(args.seed), args.environment
 
